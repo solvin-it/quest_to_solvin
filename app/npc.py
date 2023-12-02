@@ -1,24 +1,24 @@
+import streamlit as st
 import dotenv
-import os
 from openai import OpenAI
 import logging
 
 logging.basicConfig(level=logging.INFO)
 
 dotenv.load_dotenv()
-OpenAI.api_key = os.getenv("OPENAI_API_KEY")
 ai = OpenAI()
 
 class NPC():
 
-    def __init__(self, name=None, age=None, profession=None, personality=None, description=None, image=None):
+    def __init__(self, name=None, age=None, profession=None, personality=None, description=None, image=None, settings=None):
         if name is None:
-            information = self.generate_background()
+            information = self.generate_background(settings=settings)
             self.name = information['Name']
             self.age = information['Age']
             self.profession = information['Profession']
             self.personality = information['Personality']
             self.description = information['Description']
+            self.image = self.generate_image()
         else:
             self.name = name
             self.age = age
@@ -31,10 +31,10 @@ class NPC():
         system_content = f'''
             You are {self.name}, a {self.age} year old {self.profession} who is {self.personality}. You are known for {self.description}.
 
-            You should respond in tone and style appropriate for your character. Remember that this is a medieval fantasy game, so you should use language that is appropriate for that setting and character.
-            You should also repond in conversational style and not speak in long paragraphs unless the topic requires it.
+            This is role playing and you are to act as your character. Therefore, you must respond in tone and style appropriate for your character. 
+            You should also repond in conversational style and not speak in long paragraphs unless the topic requires it. The user you would be talking to would be a stranger to you so act accordingly.
 
-            Respond in less than 150 words.
+            Respond in less than 100 words.
         '''
 
         messages.insert(0, {
@@ -57,7 +57,7 @@ class NPC():
                     - Age: The age of the NPC
                     - Profession: The profession of the NPC in the game world
                     - Personality: A brief description of the NPC's personality
-                    - Description: A brief description of the NPC's appearance and reputation
+                    - Description: A 2-sentence description of the NPC's appearance
 
                 Please note that the NPC's name, age, profession, personality, and description must be separated by a colon. For example, "Name: John" or "Age: 25". And each attribute must be separated by a new line. For example:
                 Name: John Doe\\nAge: 25\\nProfession: Blacksmith\\nPersonality: Friendly\\nDescription: John Doe is a friendly blacksmith who is 25 years old. He is known for his skill in crafting swords and armor.
@@ -99,5 +99,29 @@ class NPC():
             logging.error(e)
             logging.info(response)
             return None
+        
+    def generate_image(self):
+        try:
+            prompt = f'''
+                You are an AI with the purpose of generating images of NPCs for a medieval fantasy themed game. You must create a 16-bit pixel art showing the NPC's face. The background of the NPC should be related to his or her profession. 
+                Please see character information below:
+                Name: {self.name}
+                Age: {self.age}
+                Profession: {self.profession}
+                Personality: {self.personality}
+                Description: {self.description}
+            '''
 
+            image = ai.images.generate(
+                model="dall-e-3",
+                prompt=prompt,
+                n=1,
+                size="1024x1024"
+            )
+
+            return image.data[0].url
+        except Exception as e:
+            logging.error(e)
+            logging.info("Prompt: {}", prompt)
+            return None
         
