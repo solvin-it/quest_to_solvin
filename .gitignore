@@ -34,3 +34,6 @@ Thumbs.db
 
 # Ignore Jupyter Notebook checkpoints
 .ipynb_checkpoints/
+
+# Ignore streamlit secrets
+secrets.toml
