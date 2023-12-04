@@ -1,18 +1,15 @@
-import streamlit as st
-import dotenv
 from openai import OpenAI
 import logging
 
-logging.basicConfig(level=logging.INFO)
-
-dotenv.load_dotenv()
 ai = OpenAI()
+
+logging.basicConfig(level=logging.INFO)
 
 class NPC():
 
     def __init__(self, name=None, age=None, profession=None, personality=None, description=None, image=None, settings=None):
         if name is None:
-            information = self.generate_background(settings=settings)
+            information = self.generate_background()
             self.name = information['Name']
             self.age = information['Age']
             self.profession = information['Profession']
@@ -50,6 +47,8 @@ class NPC():
         return response.choices[0].message.content
 
     def generate_background(self, settings=None):
+        generated_npc = None
+
         try:
             generation_prompt = '''
                 You are an AI with the purpose of generating NPC backstories for a medieval fantasy game. You must create one NPC and provide the following:
