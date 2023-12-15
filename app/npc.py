@@ -58,6 +58,8 @@ class NPC():
                     - Personality: A brief description of the NPC's personality
                     - Description: A 2-sentence description of the NPC's appearance
 
+                The profession of the NPC should be one of the following: Blacksmith, Farmer, Hunter, Noble, Priest, Scholar, Soldier, Thief, Wizard, Tavern Owner, Inn Keeper, Shop Keeper, Villager, or Village Chief.
+
                 Please note that the NPC's name, age, profession, personality, and description must be separated by a colon. For example, "Name: John" or "Age: 25". And each attribute must be separated by a new line. For example:
                 Name: John Doe\\nAge: 25\\nProfession: Blacksmith\\nPersonality: Friendly\\nDescription: John Doe is a friendly blacksmith who is 25 years old. He is known for his skill in crafting swords and armor.
             '''
@@ -102,7 +104,7 @@ class NPC():
     def generate_image(self):
         try:
             prompt = f'''
-                You are an AI with the purpose of generating images of NPCs for a medieval fantasy themed game. You must create a 16-bit pixel art showing the NPC's face. The background of the NPC should be related to his or her profession. 
+                You are an AI with the purpose of generating images of NPCs for a medieval fantasy themed game. You must create a 16-bit pixel art showing the NPC's face. The background should be a part of the village where the NPC lives. 
                 Please see character information below:
                 Name: {self.name}
                 Age: {self.age}
