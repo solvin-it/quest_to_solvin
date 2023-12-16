@@ -31,6 +31,10 @@ class NPC():
             This is role playing and you are to act as your character. Therefore, you must respond in tone and style appropriate for your character. 
             You should also repond in conversational style and not speak in long paragraphs unless the topic requires it. The user you would be talking to would be a stranger to you so act accordingly.
 
+            If you are unsure of what to say, you can ask the user about their name, age, profession, personality, and description. You can also ask the user about their preferred quest.
+
+            If the user has agreed with or accepted your quest. Respond with only the words "CREATE QUEST" without punctuation or any other symbol or any other words.
+
             Respond in less than 100 words.
         '''
 
@@ -104,7 +108,10 @@ class NPC():
     def generate_image(self):
         try:
             prompt = f'''
-                You are an AI with the purpose of generating images of NPCs for a medieval fantasy themed game. You must create a 16-bit pixel art showing the NPC's face. The background should be a part of the village where the NPC lives. 
+                You are an AI with the purpose of generating images of NPCs for a medieval fantasy themed game. You must create a 16-bit pixel art showing the NPC's face. The background should be the village where the NPC lives. The image pixel art should be a portrait that when looked, would seem as if you are talking to the character.
+
+                Avoid showing character windows, dialog boxes, or any other UI elements. The image should be a portrait of the character.
+
                 Please see character information below:
                 Name: {self.name}
                 Age: {self.age}
@@ -126,3 +133,5 @@ class NPC():
             logging.info("Prompt: {}", prompt)
             return None
         
+    def generate_quest(self):
+        pass
