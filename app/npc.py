@@ -17,6 +17,7 @@ class NPC():
             self.personality = information['Personality']
             self.description = information['Description']
             self.image = self.generate_image()
+            self.world_settings = settings
         else:
             self.name = name
             self.age = age
@@ -27,16 +28,22 @@ class NPC():
 
     def generate_response(self, messages):
         system_content = f'''
-            You are {self.name}, a {self.age} year old {self.profession} who is {self.personality}. You are known for {self.description}.
+            You embody the character {self.name}, a {self.age}-year-old {self.profession} known for being {self.personality} and {self.description}. In this role-playing scenario, you are to interact in a manner befitting your character's traits and background. 
 
-            This is role playing and you are to act as your character. Therefore, you must respond in tone and style appropriate for your character. 
-            You should also repond in conversational style and not speak in long paragraphs unless the topic requires it. The user you would be talking to would be a stranger to you so act accordingly.
+            Guidelines for Interaction:
+            1. Adopt a conversational tone and style that reflects your character's persona.
+            2. Keep responses concise, typically under 100 words, and avoid lengthy paragraphs unless necessary.
+            3. Treat the user as a stranger, maintaining an appropriate demeanor based on your character's nature.
 
-            If you are unsure of what to say, you can ask the user about their name, age, profession, personality, and description. You can also ask the user about their preferred quest.
+            Your Objective:
+            - Engage the user in dialogue, guiding them towards a quest.
+            - You may inquire about the user's name, age, profession, personality, and interests to tailor a suitable quest.
+            - If asked about matters beyond your character's knowledge, respond with "I don't know" or "I'm not sure".
+            - Once a mission or task is established and accepted by the user, simply respond with "CREATE QUEST" (no punctuation, symbols, or additional text).
 
-            If you have mentioned a mission or task and the user has agreed with or accepted your quest. Respond with only the words "CREATE QUEST" without punctuation or any other symbol or any other words.
-
-            Respond in less than 100 words.
+            Remember, your interactions should be immersive, reflecting the settings. 
+            
+            Additional Settings: {self.world_settings}.
         '''
 
         messages.insert(0, {
@@ -109,16 +116,21 @@ class NPC():
     def generate_image(self):
         try:
             prompt = f'''
-                You are an AI with the purpose of generating images of characters with medieval fantasy theme. You must create a 32-bit pixel art showing the character's face. The background should be the village where the character lives.
+                As an AI tasked with creating medieval fantasy-themed character images, your objective is to generate a 32-bit pixel art portrait. The portrait should focus on the character's face, capturing their unique features and expressions in detail. Additionally, include a background that reflects the character's village environment or their profession, such as a smithy, tavern, inn, or a relevant setting.
 
-                Do not show character windows, dialog boxes, or any other UI elements. The image should be a portrait of the character.
+                Key Instructions:
+                - The image must be a close-up portrait showcasing only the character's face.
+                - Background: Choose a setting that relates to either the character's village life or their profession, enhancing the character's story.
+                - Avoid including character windows, dialog boxes, or any UI elements in the image. Focus on the character and the background.
 
-                Please see character information below:
-                Name: {self.name}
-                Age: {self.age}
-                Profession: {self.profession}
-                Personality: {self.personality}
-                Description: {self.description}
+                Character Information for Image Context:
+                - Name: {self.name}
+                - Age: {self.age}
+                - Profession: {self.profession}
+                - Personality: {self.personality}
+                - Physical Description: {self.description}
+
+                Please ensure that the image is a harmonious blend of the character's facial features and an appropriate background, adhering to the medieval fantasy theme.
             '''
 
             image = ai.images.generate(
@@ -135,59 +147,71 @@ class NPC():
             return None
         
     def generate_quest(self, messages):
-        system_content = f'''
-            As an AI dedicated to creating quests for a medieval fantasy game, your task is to generate a quest tailored to the user's level. The quest must be challenging yet achievable. Use the provided NPC information to create a contextually appropriate quest.
+        try:
+            system_content = f'''
+                As an AI dedicated to creating quests for a medieval fantasy game, your task is to generate a quest tailored to the user's level. The quest must be challenging yet achievable. Use the provided NPC information to create a contextually appropriate quest.
 
-            NPC Information:
-            - Name: {self.name}
-            - Age: {self.age}
-            - Profession: {self.profession}
-            - Personality: {self.personality}
-            - Description: {self.description}
+                NPC Information:
+                - Name: {self.name}
+                - Age: {self.age}
+                - Profession: {self.profession}
+                - Personality: {self.personality}
+                - Description: {self.description}
 
-            Generate a quest using the following format, ensuring each attribute is distinctly separated:
+                Generate a quest using the following format, ensuring each attribute is distinctly separated by a colon and each attribute is separated by a new line:
 
-            Title: [Insert the title of the quest]
-            Description: [Provide a detailed background and description of the quest]
-            Difficulty: [Assign a difficulty level from F (easiest) to S (hardest)]
-            Success Condition: [Define what constitutes successful completion of the quest]
-            Failure Condition: [Specify conditions under which the quest is failed, e.g., time expiration, player's death, etc.]
-            Reward: [List the reward(s) for completing the quest]
+                Title: [Insert the title of the quest]\\n
+                Description: [Provide a detailed background and description of the quest]\\n
+                Difficulty: [Assign a difficulty level from F (easiest) to S (hardest), with possible values being F, E, D, C, B, A, and S]\\n
+                Success Condition: [Define what constitutes successful completion of the quest]\\n
+                Failure Condition: [Specify conditions under which the quest is failed, e.g., time expiration, player's death, etc.]\\n
+                Reward: [List the reward(s) for completing the quest]
 
-            Note: Only include the quest details in your response, formatted as above. Avoid adding any extraneous messages, as the response will be directly parsed for user display.
+                As an example, a quest for a blacksmith NPC could be:
+                Title: The Blacksmith's Apprentice\n
+                Description: A blacksmith in the village is looking for an apprentice. He is willing to teach you the basics of blacksmithing if you help him with his work.\n
+                Difficulty: F\n
+                Success Condition: Complete the blacksmith's tasks.\n
+                Failure Condition: The blacksmith dies.\n
+                Reward: Learn the basics of blacksmithing.
 
-            Message History:
-            ############################
-        '''
+                Note: Only include the quest details in your response, formatted as above. Avoid adding any extraneous messages, as the response will be directly parsed for user display.
 
-        # Append the chat history to the prompt
-        for message in messages:
-            speaker = "User" if message['role'] == "user" else self.name
-            system_content += f"\n{speaker}: {message['content']}"
+                Message History:
+                ############################
+            '''
 
-        system_content += "\n############################"
+            # Append the chat history to the prompt
+            for message in messages:
+                speaker = "User" if message['role'] == "user" else self.name
+                system_content += f"\n{speaker}: {message['content']}"
 
-        messages = [{
-            "role": "system",
-            "content": system_content
-        }]
+            system_content += "\n############################"
 
-        response = ai.chat.completions.create(
-            model = "gpt-3.5-turbo",
-            messages = messages
-        )
+            messages = [{
+                "role": "system",
+                "content": system_content
+            }]
 
-        processed_response = self.process_response(response.choices[0].message.content)
+            response = ai.chat.completions.create(
+                model = "gpt-3.5-turbo",
+                messages = messages
+            )
 
-        logging.info(f"Processed Response: {processed_response}")
+            processed_response = self.process_response(response.choices[0].message.content)
 
-        quest = Quest(
-            title=processed_response['Title'],
-            description=processed_response['Description'],
-            difficulty=processed_response['Difficulty'],
-            success_condition=processed_response['Success Condition'],
-            failure_condition=processed_response['Failure Condition'],
-            reward=processed_response['Reward']
-        )
+            quest = Quest(
+                title=processed_response['Title'],
+                description=processed_response['Description'],
+                difficulty=processed_response['Difficulty'],
+                success_condition=processed_response['Success Condition'],
+                failure_condition=processed_response['Failure Condition'],
+                reward=processed_response['Reward']
+            )
 
-        return quest
+            return quest
+        except Exception as e:
+            logging.error(e)
+            logging.info("Prompt: {}", system_content)
+            logging.info(f"Response: {response.choices[0].message.content}")
+            return None
