@@ -105,6 +105,7 @@ if OpenAI.api_key.startswith('sk-') and len (OpenAI.api_key ) == 51:
 
                     if "CREATE QUEST" in assistant_response:
                         st.session_state.quest_created = True
+                        st.session_state.quest = st.session_state.npc.generate_quest(st.session_state.messages.copy())
                         st.rerun()
                     
                     # Simulate stream of response with milliseconds delay
@@ -113,4 +114,10 @@ if OpenAI.api_key.startswith('sk-') and len (OpenAI.api_key ) == 51:
                 # Add assistant response to chat history
                 st.session_state.messages.append({"role": "assistant", "content": assistant_response})
     else:
-        st.header("Quest")
+        st.markdown("### Quest Window")
+        st.markdown(f"Title: {st.session_state.quest.title}")
+        st.markdown(f"Description: {st.session_state.quest.description}")
+        st.markdown(f"Difficulty: {st.session_state.quest.difficulty}")
+        st.markdown(f"Success Condition: {st.session_state.quest.success_condition}")
+        st.markdown(f"Failure Condition: {st.session_state.quest.failure_condition}")
+        st.markdown(f"Reward: {st.session_state.quest.reward}")

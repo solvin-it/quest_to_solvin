@@ -1,5 +1,6 @@
 from openai import OpenAI
 import logging
+from quest import Quest
 
 ai = OpenAI()
 
@@ -9,7 +10,7 @@ class NPC():
 
     def __init__(self, name=None, age=None, profession=None, personality=None, description=None, image=None, settings=None):
         if name is None:
-            information = self.generate_background()
+            information = self.generate_background(settings=settings)
             self.name = information['Name']
             self.age = information['Age']
             self.profession = information['Profession']
@@ -33,7 +34,7 @@ class NPC():
 
             If you are unsure of what to say, you can ask the user about their name, age, profession, personality, and description. You can also ask the user about their preferred quest.
 
-            If the user has agreed with or accepted your quest. Respond with only the words "CREATE QUEST" without punctuation or any other symbol or any other words.
+            If you have mentioned a mission or task and the user has agreed with or accepted your quest. Respond with only the words "CREATE QUEST" without punctuation or any other symbol or any other words.
 
             Respond in less than 100 words.
         '''
@@ -108,9 +109,9 @@ class NPC():
     def generate_image(self):
         try:
             prompt = f'''
-                You are an AI with the purpose of generating images of NPCs for a medieval fantasy themed game. You must create a 16-bit pixel art showing the NPC's face. The background should be the village where the NPC lives. The image pixel art should be a portrait that when looked, would seem as if you are talking to the character.
+                You are an AI with the purpose of generating images of characters with medieval fantasy theme. You must create a 32-bit pixel art showing the character's face. The background should be the village where the character lives.
 
-                Avoid showing character windows, dialog boxes, or any other UI elements. The image should be a portrait of the character.
+                Do not show character windows, dialog boxes, or any other UI elements. The image should be a portrait of the character.
 
                 Please see character information below:
                 Name: {self.name}
@@ -133,5 +134,60 @@ class NPC():
             logging.info("Prompt: {}", prompt)
             return None
         
-    def generate_quest(self):
-        pass
+    def generate_quest(self, messages):
+        system_content = f'''
+            As an AI dedicated to creating quests for a medieval fantasy game, your task is to generate a quest tailored to the user's level. The quest must be challenging yet achievable. Use the provided NPC information to create a contextually appropriate quest.
+
+            NPC Information:
+            - Name: {self.name}
+            - Age: {self.age}
+            - Profession: {self.profession}
+            - Personality: {self.personality}
+            - Description: {self.description}
+
+            Generate a quest using the following format, ensuring each attribute is distinctly separated:
+
+            Title: [Insert the title of the quest]
+            Description: [Provide a detailed background and description of the quest]
+            Difficulty: [Assign a difficulty level from F (easiest) to S (hardest)]
+            Success Condition: [Define what constitutes successful completion of the quest]
+            Failure Condition: [Specify conditions under which the quest is failed, e.g., time expiration, player's death, etc.]
+            Reward: [List the reward(s) for completing the quest]
+
+            Note: Only include the quest details in your response, formatted as above. Avoid adding any extraneous messages, as the response will be directly parsed for user display.
+
+            Message History:
+            ############################
+        '''
+
+        # Append the chat history to the prompt
+        for message in messages:
+            speaker = "User" if message['role'] == "user" else self.name
+            system_content += f"\n{speaker}: {message['content']}"
+
+        system_content += "\n############################"
+
+        messages = [{
+            "role": "system",
+            "content": system_content
+        }]
+
+        response = ai.chat.completions.create(
+            model = "gpt-3.5-turbo",
+            messages = messages
+        )
+
+        processed_response = self.process_response(response.choices[0].message.content)
+
+        logging.info(f"Processed Response: {processed_response}")
+
+        quest = Quest(
+            title=processed_response['Title'],
+            description=processed_response['Description'],
+            difficulty=processed_response['Difficulty'],
+            success_condition=processed_response['Success Condition'],
+            failure_condition=processed_response['Failure Condition'],
+            reward=processed_response['Reward']
+        )
+
+        return quest
