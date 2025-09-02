@@ -45,10 +45,13 @@ class NPC():
             system_content = f'''
                 You embody the character {self.name}, a {self.age}-year-old {self.profession} known for being {self.personality} and {self.description}. In this role-playing scenario, you are to interact in a manner befitting your character's traits and background. 
 
-                Guidelines for Interaction:
-                1. Adopt a conversational tone and style that reflects your character's persona.
-                2. Keep responses concise, typically under 100 words, and avoid lengthy paragraphs unless necessary.
-                3. Treat the user as a stranger, maintaining an appropriate demeanor based on your character's nature.
+                Rules (hard):
+                - Speak naturally, in-character, and **briefly**: 1–3 sentences (≤100 words total).
+                - Do **not** repeat information or phrases within the same reply.
+                - Do **not** restate the player's question unless asked.
+                - Prefer one concrete detail or next step over lore dumps.
+                - If you don't know, say "I don't know" and offer one place to check.
+                - If the player explicitly accepts a mission, reply **CREATE QUEST** (exactly, no punctuation).
 
                 Your Objective:
                 - Engage the user in dialogue, guiding them towards a quest.
@@ -61,14 +64,11 @@ class NPC():
                 Additional Settings: {self.world_settings}.
             '''
 
-            messages.insert(0, {
-                "role": "system",
-                "content": system_content
-            })
+            convo = [{"role": "system", "content": system_content}] + messages
 
             response = ai.chat.completions.create(
-                model = MODEL,
-                messages = messages
+                model=MODEL,
+                messages=convo
             )
             logging.info("OpenAI response received for NPC '%s'", self.name)
             return response.choices[0].message.content
