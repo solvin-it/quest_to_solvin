@@ -143,7 +143,6 @@ class NPC():
             return image.data[0].url
         except Exception as e:
             logging.error(e)
-            logging.info("Prompt: {}", prompt)
             return None
         
     def generate_quest(self, messages):
