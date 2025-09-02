@@ -34,9 +34,9 @@ with st.sidebar:
         st.success("OpenAI API Key found!", icon="🔑")
     else:
         OpenAI.api_key = st.text_input("OpenAI API Key", type="password")
-        if (not OpenAI.api_key.startswith('sk-') or len (OpenAI.api_key ) != 51) and OpenAI.api_key != "":
+        if not OpenAI.api_key.startswith('sk-') and OpenAI.api_key != "":
             st.error("Invalid API Key", icon="🚫")
-        elif OpenAI.api_key.startswith('sk-') and len (OpenAI.api_key ) == 51:
+        elif OpenAI.api_key.startswith('sk-'):
             st.success("OpenAI API Key found!", icon="🔑")
 
     if 'npc' in st.session_state:
@@ -48,7 +48,7 @@ with st.sidebar:
         st.markdown(f"Personality: {st.session_state.npc.personality}")
         st.markdown(f"Description: {st.session_state.npc.description}")
 
-if OpenAI.api_key.startswith('sk-') and len (OpenAI.api_key ) == 51:
+if OpenAI.api_key.startswith('sk-'):
     # Initialize the world and start the introduction.
     if 'world' not in st.session_state:
         st.session_state.world = World()
