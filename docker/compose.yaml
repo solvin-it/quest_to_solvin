@@ -1,7 +1,6 @@
 services:
   quest-to-solvin:
     image: fernandogonzzz/quest-to-solvin:latest
-    container_name: quest_to_solvin
     env_file:
       - .env
     ports:
