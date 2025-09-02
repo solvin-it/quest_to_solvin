@@ -1,0 +1,31 @@
+# Exclude secrets and local virtualenvs from build context
+.env
+.env.*
+.env_template
+.env.local
+.envrc
+
+# Local virtualenvs and env folder
+env/
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Git and system files
+.git
+.gitignore
+.DS_Store
+
+# Streams and docs not needed in image
+documentation/
+
+# Do not send the docker directory (compose & Dockerfile are used from repo)
+docker/
+
+# Streamlit secrets
+.streamlit/secrets.toml
