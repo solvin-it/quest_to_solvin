@@ -3,7 +3,7 @@ services:
     image: fernandogonzzz/quest-to-solvin:latest
     container_name: quest_to_solvin
     env_file:
-      - ../.env
+      - .env
     ports:
       - "8501:8501"
     restart: unless-stopped
