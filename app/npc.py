@@ -151,7 +151,7 @@ class NPC():
                 - Personality: {self.personality}
                 - Physical Description: {self.description}
 
-                Please ensure that the image is a harmonious blend of the character's facial features and an appropriate background, adhering to the medieval fantasy theme.
+                Please ensure that the image is a harmonious blend of the character's facial features and an appropriate background, adhering to the medieval fantasy theme. If the character is a female, do not add beard.
             '''
 
             image = ai.images.generate(
