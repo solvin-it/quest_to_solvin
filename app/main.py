@@ -5,9 +5,16 @@ from npc import NPC
 import time
 from openai import OpenAI
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
 # Path settings
 current_dir = Path(__file__).parent if "__file__" in locals() else Path.cwd()
 css_file = current_dir / "static" / "css" / "main.css"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+SECRET_PASSWORD = os.getenv("SECRET_PASSWORD", "")
 
 def simulate_typing(text):
     message_placeholder = st.empty()
@@ -29,15 +36,15 @@ with st.sidebar:
     # Set the title of the page
     st.title("Chapter One: The Beginning")
 
-    if "OPENAI_API_KEY" in st.secrets:
-        OpenAI.api_key = st.secrets["OPENAI_API_KEY"]
+    OpenAI.api_key = st.text_input("OpenAI API Key", type="password")
+
+    if OPENAI_API_KEY != "" and SECRET_PASSWORD != "" and OpenAI.api_key == SECRET_PASSWORD:
+        OpenAI.api_key = OPENAI_API_KEY
+    
+    if not OpenAI.api_key.startswith('sk-') and OpenAI.api_key != "":
+        st.error("Invalid API Key", icon="🚫")
+    elif OpenAI.api_key.startswith('sk-'):
         st.success("OpenAI API Key found!", icon="🔑")
-    else:
-        OpenAI.api_key = st.text_input("OpenAI API Key", type="password")
-        if not OpenAI.api_key.startswith('sk-') and OpenAI.api_key != "":
-            st.error("Invalid API Key", icon="🚫")
-        elif OpenAI.api_key.startswith('sk-'):
-            st.success("OpenAI API Key found!", icon="🔑")
 
     if 'npc' in st.session_state:
         st.markdown("### Character Window:")
