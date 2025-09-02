@@ -1,6 +1,6 @@
 from openai import OpenAI
 import logging
-from .quest import Quest
+from quest import Quest
 from dotenv import load_dotenv
 import os
 
