@@ -1,7 +1,7 @@
-import dotenv
+from dotenv import load_dotenv
 import os
 
-dotenv.load_dotenv()
+load_dotenv()
 
 LORE_PATH = os.getenv("LORE_PATH")
 BACKGROUND_PATH = os.getenv("BACKGROUND_PATH")
