@@ -18,13 +18,13 @@ Designed as a portfolio project, it demonstrates how large language models and m
 
 ## 🌐 Live Demo
 
-👉 [Try Quest to Solvin on GCP](https://your-deployment-url-here)  
+👉 [Try Quest to Solvin on GCP](https://quest.solvin.co)  
 
 ---
 
 ## 🎮 Features
 
-- **Dynamic NPCs:** Each NPC has a unique personality, background, and profession, generated via GPT-3.5.  
+- **Dynamic NPCs:** Each NPC has a unique personality, background, and profession, generated via GPT-5-nano.  
 - **Personalized Quests:** NPCs issue quests tailored to their role and your chat history.  
 - **Pixel Art Portraits:** NPC portraits created using DALL·E for a retro RPG feel.  
 - **Rich Lore:** Game world background and lore are loaded from markdown files for extensibility.  
