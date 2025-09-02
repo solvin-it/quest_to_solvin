@@ -1,16 +1,28 @@
 from openai import OpenAI
 import logging
-from quest import Quest
+from .quest import Quest
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 ai = OpenAI()
 
+MODEL = os.getenv("MODEL")
+
 logging.basicConfig(level=logging.INFO)
+
 
 class NPC():
 
     def __init__(self, name=None, age=None, profession=None, personality=None, description=None, image=None, settings=None):
+        logging.info("Initializing NPC with name=%s", name)
         if name is None:
+            logging.info("No name provided, generating NPC background.")
             information = self.generate_background(settings=settings)
+            if information is None:
+                logging.error("Failed to generate NPC background.")
+                raise ValueError("NPC background generation failed.")
             self.name = information['Name']
             self.age = information['Age']
             self.profession = information['Profession']
@@ -25,43 +37,49 @@ class NPC():
             self.personality = personality
             self.description = description
             self.image = image
+        logging.info(f"NPC initialized: {self.name}, {self.age}, {self.profession}, {self.personality}")
 
     def generate_response(self, messages):
-        system_content = f'''
-            You embody the character {self.name}, a {self.age}-year-old {self.profession} known for being {self.personality} and {self.description}. In this role-playing scenario, you are to interact in a manner befitting your character's traits and background. 
+        logging.info("Generating response for NPC '%s' with %d messages.", self.name, len(messages))
+        try:
+            system_content = f'''
+                You embody the character {self.name}, a {self.age}-year-old {self.profession} known for being {self.personality} and {self.description}. In this role-playing scenario, you are to interact in a manner befitting your character's traits and background. 
 
-            Guidelines for Interaction:
-            1. Adopt a conversational tone and style that reflects your character's persona.
-            2. Keep responses concise, typically under 100 words, and avoid lengthy paragraphs unless necessary.
-            3. Treat the user as a stranger, maintaining an appropriate demeanor based on your character's nature.
+                Guidelines for Interaction:
+                1. Adopt a conversational tone and style that reflects your character's persona.
+                2. Keep responses concise, typically under 100 words, and avoid lengthy paragraphs unless necessary.
+                3. Treat the user as a stranger, maintaining an appropriate demeanor based on your character's nature.
 
-            Your Objective:
-            - Engage the user in dialogue, guiding them towards a quest.
-            - You may inquire about the user's name, age, profession, personality, and interests to tailor a suitable quest.
-            - If asked about matters beyond your character's knowledge, respond with "I don't know" or "I'm not sure".
-            - Once a mission or task is established and accepted by the user, simply respond with "CREATE QUEST" (no punctuation, symbols, or additional text).
+                Your Objective:
+                - Engage the user in dialogue, guiding them towards a quest.
+                - You may inquire about the user's name, profession, and interests to tailor a suitable quest.
+                - If asked about matters beyond your character's knowledge, respond with "I don't know" or "I'm not sure".
+                - Once a mission or task is established and accepted by the user, simply respond with "CREATE QUEST" (no punctuation, symbols, or additional text).
 
-            Remember, your interactions should be immersive, reflecting the settings. 
-            
-            Additional Settings: {self.world_settings}.
-        '''
+                Remember, your interactions should be immersive, reflecting the settings. 
+                
+                Additional Settings: {self.world_settings}.
+            '''
 
-        messages.insert(0, {
-            "role": "system",
-            "content": system_content
-        })
+            messages.insert(0, {
+                "role": "system",
+                "content": system_content
+            })
 
-        response = ai.chat.completions.create(
-            model = "gpt-3.5-turbo",
-            messages = messages
-        )
-
-        return response.choices[0].message.content
+            response = ai.chat.completions.create(
+                model = MODEL,
+                messages = messages
+            )
+            logging.info("OpenAI response received for NPC '%s'", self.name)
+            return response.choices[0].message.content
+        except Exception as e:
+            logging.error("Error generating response for NPC '%s': %s", self.name, e)
+            return "[Error: Unable to generate response.]"
 
     def generate_background(self, settings=None):
         generated_npc = None
-
         try:
+            logging.info("Generating NPC background with settings: %s", settings)
             generation_prompt = '''
                 You are an AI with the purpose of generating NPC backstories for a medieval fantasy game. You must create one NPC and provide the following:
                     - Name: The name of the NPC
@@ -85,36 +103,39 @@ class NPC():
             }]
 
             generated_npc = ai.chat.completions.create(
-                model = "gpt-3.5-turbo",
-                messages = messages,
-                max_tokens = 500
+                model = MODEL,
+                messages = messages
             )
-
+            logging.info("NPC background generated, processing response.")
             generated_npc = self.process_response(generated_npc.choices[0].message.content)
-
+            logging.info("NPC background processed: %s", generated_npc)
             return generated_npc
         except Exception as e:
-            logging.error(e)
-            logging.info(generated_npc)
+            logging.error("Error generating NPC background: %s", e)
+            logging.info("Raw generated_npc: %s", generated_npc)
             return None
     
     def process_response(self, response):
         try:
+            logging.info("Processing response: %s", response)
             processed_response = {}
-            
             for attribute in response.split("\n"):
                 if attribute:
                     attribute = attribute.split(":")
+                    if len(attribute) < 2:
+                        logging.warning("Malformed attribute in response: %s", attribute)
+                        continue
                     processed_response[attribute[0].strip()] = attribute[1].strip()
-
+            logging.info("Processed response dict: %s", processed_response)
             return processed_response
         except Exception as e:
-            logging.error(e)
-            logging.info(response)
+            logging.error("Error processing response: %s", e)
+            logging.info("Raw response: %s", response)
             return None
         
     def generate_image(self):
         try:
+            logging.info("Generating image for NPC '%s'", self.name)
             prompt = f'''
                 As an AI tasked with creating medieval fantasy-themed character images, your objective is to generate a 32-bit pixel art portrait. The portrait should focus on the character's face, capturing their unique features and expressions in detail. Additionally, include a background that reflects the character's village environment or their profession, such as a smithy, tavern, inn, or a relevant setting.
 
@@ -139,14 +160,15 @@ class NPC():
                 n=1,
                 size="1024x1024"
             )
-
+            logging.info("Image generated for NPC '%s'", self.name)
             return image.data[0].url
         except Exception as e:
-            logging.error(e)
+            logging.error("Error generating image for NPC '%s': %s", self.name, e)
             return None
         
     def generate_quest(self, messages):
         try:
+            logging.info("Generating quest for NPC '%s' with %d messages.", self.name, len(messages))
             system_content = f'''
                 As an AI dedicated to creating quests for a medieval fantasy game, your task is to generate a quest tailored to the user's level. The quest must be challenging yet achievable. Use the provided NPC information to create a contextually appropriate quest.
 
@@ -193,12 +215,11 @@ class NPC():
             }]
 
             response = ai.chat.completions.create(
-                model = "gpt-3.5-turbo",
+                model = MODEL,
                 messages = messages
             )
-
+            logging.info("Quest response received for NPC '%s'", self.name)
             processed_response = self.process_response(response.choices[0].message.content)
-
             quest = Quest(
                 title=processed_response['Title'],
                 description=processed_response['Description'],
@@ -207,10 +228,16 @@ class NPC():
                 failure_condition=processed_response['Failure Condition'],
                 reward=processed_response['Reward']
             )
-
+            logging.info("Quest object created: %s", quest)
             return quest
         except Exception as e:
-            logging.error(e)
-            logging.info("Prompt: {}", system_content)
-            logging.info(f"Response: {response.choices[0].message.content}")
+            logging.error("Error generating quest for NPC '%s': %s", self.name, e)
+            try:
+                logging.info("Prompt: %s", system_content)
+            except Exception:
+                pass
+            try:
+                logging.info("Response: %s", response.choices[0].message.content)
+            except Exception:
+                pass
             return None
