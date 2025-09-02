@@ -36,15 +36,17 @@ with st.sidebar:
     # Set the title of the page
     st.title("Chapter One: The Beginning")
 
-    OpenAI.api_key = st.text_input("OpenAI API Key", type="password")
+    # Only show the API key input when the game hasn't started yet
+    if not st.session_state.get('start', False):
+        OpenAI.api_key = st.text_input("OpenAI API Key", type="password")
 
-    if OPENAI_API_KEY != "" and SECRET_PASSWORD != "" and OpenAI.api_key == SECRET_PASSWORD:
-        OpenAI.api_key = OPENAI_API_KEY
-    
-    if not OpenAI.api_key.startswith('sk-') and OpenAI.api_key != "":
-        st.error("Invalid API Key", icon="🚫")
-    elif OpenAI.api_key.startswith('sk-'):
-        st.success("OpenAI API Key found!", icon="🔑")
+        if OPENAI_API_KEY != "" and SECRET_PASSWORD != "" and OpenAI.api_key == SECRET_PASSWORD:
+            OpenAI.api_key = OPENAI_API_KEY
+        
+        if not OpenAI.api_key.startswith('sk-') and OpenAI.api_key != "":
+            st.error("Invalid API Key", icon="🚫")
+        elif OpenAI.api_key.startswith('sk-'):
+            st.success("OpenAI API Key found!", icon="🔑")
 
     if 'npc' in st.session_state:
         st.markdown("### Character Window:")
@@ -78,12 +80,31 @@ if OpenAI.api_key.startswith('sk-'):
                 st.markdown(line)
             
             if st.button("Start"):
-                st.session_state.start = True
-                # Initialize the NPC
-                if "npc" not in st.session_state:
-                    st.session_state.npc = NPC(
-                        settings=st.session_state.world.settings
-                    )
+                # Show loading feedback while we initialize the NPC and prepare the scene
+                steps = [
+                    "Waking the village of Eldertree...",
+                    "Summoning a friendly villager...",
+                    "Creating the character's memories...",
+                    "Finalizing the scene..."
+                ]
+
+                with st.spinner("Starting your adventure..."):
+                    progress = st.progress(0)
+                    for i, step in enumerate(steps, start=1):
+                        # show a small status line for each step
+                        st.info(step)
+                        time.sleep(1)
+                        progress.progress(int(i / len(steps) * 100))
+
+                    # Mark session as started and initialize the NPC (if missing)
+                    st.session_state.start = True
+                    if "npc" not in st.session_state:
+                        st.session_state.npc = NPC(
+                            settings=st.session_state.world.settings
+                        )
+
+                st.success("The village is ready — talk to the villager!", icon="🎮")
+                # Rerun to show the chat UI
                 st.rerun()
         else:
             # Initialize chat history
