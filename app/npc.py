@@ -8,7 +8,7 @@ load_dotenv()
 
 ai = OpenAI()
 
-MODEL = os.getenv("MODEL")
+MODEL = os.getenv("MODEL", "gpt-5-nano")
 
 logging.basicConfig(level=logging.INFO)
 
